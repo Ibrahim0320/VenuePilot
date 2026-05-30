@@ -1,0 +1,5 @@
+.next
+node_modules
+coverage
+dev.db
+package-lock.json

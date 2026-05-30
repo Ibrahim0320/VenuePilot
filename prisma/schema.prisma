@@ -1,0 +1,293 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Venue {
+  id          String   @id @default(cuid())
+  slug        String   @unique
+  name        String
+  legalName   String?
+  timezone    String   @default("Europe/Stockholm")
+  contactEmail String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  users        User[]
+  openingHours OpeningHour[]
+  rules        VenueRule[]
+  packages     VenuePackage[]
+  areas        VenueArea[]
+  guests       Guest[]
+  bookings     Booking[]
+  imports      ImportBatch[]
+  inquiries    Inquiry[]
+  approvals    ApprovalTask[]
+  aiLogs       AIInteractionLog[]
+}
+
+model User {
+  id        String   @id @default(cuid())
+  venueId   String
+  name      String
+  email     String   @unique
+  role      String   @default("staff")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  venue             Venue          @relation(fields: [venueId], references: [id], onDelete: Cascade)
+  reviewedApprovals ApprovalTask[] @relation("ApprovalReviewer")
+}
+
+model OpeningHour {
+  id        String   @id @default(cuid())
+  venueId   String
+  weekday   Int
+  opensAt   String
+  closesAt  String
+  isClosed  Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  venue Venue @relation(fields: [venueId], references: [id], onDelete: Cascade)
+
+  @@unique([venueId, weekday])
+}
+
+model VenueRule {
+  id          String   @id @default(cuid())
+  venueId     String
+  key         String
+  label       String
+  value       String
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  venue Venue @relation(fields: [venueId], references: [id], onDelete: Cascade)
+
+  @@unique([venueId, key])
+}
+
+model VenuePackage {
+  id          String   @id @default(cuid())
+  venueId     String
+  name        String
+  description String?
+  priceNote   String?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  venue    Venue     @relation(fields: [venueId], references: [id], onDelete: Cascade)
+  bookings Booking[]
+
+  @@unique([venueId, name])
+}
+
+model VenueArea {
+  id          String   @id @default(cuid())
+  venueId     String
+  name        String
+  description String?
+  capacity    Int?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  venue    Venue     @relation(fields: [venueId], references: [id], onDelete: Cascade)
+  bookings Booking[]
+
+  @@unique([venueId, name])
+}
+
+model Guest {
+  id        String   @id @default(cuid())
+  venueId   String
+  name      String?
+  email     String?
+  phone     String?
+  notes     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  venue         Venue          @relation(fields: [venueId], references: [id], onDelete: Cascade)
+  bookingGuests BookingGuest[]
+
+  @@index([venueId, email])
+  @@index([venueId, phone])
+}
+
+model Booking {
+  id             String    @id @default(cuid())
+  venueId        String
+  packageId      String?
+  areaId         String?
+  sourceSystem   String?
+  externalId     String?
+  status         String    @default("unknown")
+  startsAt       DateTime
+  endsAt         DateTime?
+  partySize      Int?
+  guestName      String?
+  guestEmail     String?
+  guestPhone     String?
+  depositPaid    Boolean   @default(false)
+  notes          String?
+  rawSourceJson  String?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  venue         Venue          @relation(fields: [venueId], references: [id], onDelete: Cascade)
+  package       VenuePackage?  @relation(fields: [packageId], references: [id], onDelete: SetNull)
+  area          VenueArea?     @relation(fields: [areaId], references: [id], onDelete: SetNull)
+  bookingGuests BookingGuest[]
+
+  @@index([venueId, startsAt])
+  @@index([venueId, status])
+}
+
+model BookingGuest {
+  id        String   @id @default(cuid())
+  bookingId String
+  guestId   String
+  role      String   @default("primary")
+  createdAt DateTime @default(now())
+
+  booking Booking @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  guest   Guest   @relation(fields: [guestId], references: [id], onDelete: Cascade)
+
+  @@unique([bookingId, guestId])
+}
+
+model ImportBatch {
+  id              String   @id @default(cuid())
+  venueId         String
+  fileName        String
+  sourceSystem    String?
+  status          String   @default("uploaded")
+  totalRows       Int      @default(0)
+  importedRows    Int      @default(0)
+  skippedRows     Int      @default(0)
+  mappingJson     String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  venue Venue      @relation(fields: [venueId], references: [id], onDelete: Cascade)
+  rows  ImportRow[]
+}
+
+model ImportRow {
+  id             String   @id @default(cuid())
+  importBatchId  String
+  rowNumber      Int
+  rowHash        String
+  status         String   @default("pending")
+  rawDataJson    String
+  normalizedJson String?
+  errorMessage   String?
+  createdAt      DateTime @default(now())
+
+  importBatch ImportBatch @relation(fields: [importBatchId], references: [id], onDelete: Cascade)
+
+  @@unique([importBatchId, rowHash])
+}
+
+model Inquiry {
+  id                String   @id @default(cuid())
+  venueId           String
+  source            String   @default("manual")
+  guestName         String?
+  guestEmail        String?
+  guestPhone        String?
+  inquiryText       String
+  extractedJson     String?
+  status            String   @default("new")
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  venue        Venue        @relation(fields: [venueId], references: [id], onDelete: Cascade)
+  draftReplies DraftReply[]
+}
+
+model DraftReply {
+  id                 String   @id @default(cuid())
+  inquiryId          String
+  aiInteractionLogId String?
+  draftText          String
+  internalSummary    String?
+  assumptionsJson    String?
+  status             String   @default("draft")
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  inquiry          Inquiry           @relation(fields: [inquiryId], references: [id], onDelete: Cascade)
+  aiInteractionLog AIInteractionLog? @relation(fields: [aiInteractionLogId], references: [id], onDelete: SetNull)
+}
+
+model ApprovalTask {
+  id                 String    @id @default(cuid())
+  venueId            String
+  reviewerId         String?
+  taskType           String
+  status             String    @default("pending")
+  sourceType         String?
+  sourceId           String?
+  draftContent       String
+  approvedContent    String?
+  metadataJson       String?
+  reviewedAt         DateTime?
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+
+  venue    Venue @relation(fields: [venueId], references: [id], onDelete: Cascade)
+  reviewer User? @relation("ApprovalReviewer", fields: [reviewerId], references: [id], onDelete: SetNull)
+
+  @@index([venueId, status])
+  @@index([venueId, taskType])
+}
+
+model AnalyticsSnapshot {
+  id          String   @id @default(cuid())
+  venueId     String
+  periodStart DateTime
+  periodEnd   DateTime
+  metricsJson String
+  createdAt   DateTime @default(now())
+
+  @@index([venueId, periodStart, periodEnd])
+}
+
+model ForecastSnapshot {
+  id           String   @id @default(cuid())
+  venueId      String
+  periodStart  DateTime
+  periodEnd    DateTime
+  forecastJson String
+  confidence   String   @default("low")
+  createdAt    DateTime @default(now())
+
+  @@index([venueId, periodStart, periodEnd])
+}
+
+model AIInteractionLog {
+  id             String   @id @default(cuid())
+  venueId        String
+  mode           String   @default("mock")
+  provider       String   @default("mock")
+  model          String?
+  purpose        String
+  promptVersion  String?
+  inputJson      String?
+  outputJson     String?
+  createdAt      DateTime @default(now())
+
+  venue        Venue        @relation(fields: [venueId], references: [id], onDelete: Cascade)
+  draftReplies DraftReply[]
+
+  @@index([venueId, purpose])
+}
