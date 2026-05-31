@@ -6,6 +6,8 @@ import { SectionCard } from "@/components/SectionCard";
 import { StatCard } from "@/components/StatCard";
 import { prisma } from "@/lib/db/prisma";
 
+export const dynamic = "force-dynamic";
+
 export default async function DataPage() {
   const venue = await prisma.venue.findFirst({
     where: { name: "Biljardpalatset Göteborg AB", city: "Göteborg" },
@@ -25,8 +27,8 @@ export default async function DataPage() {
         <Badge variant="neutral">Caspeco Excel import</Badge>
         <h1 className="mt-3 text-2xl font-semibold text-ink">Data import</h1>
         <p className="mt-2 text-sm text-stone-600">
-          Upload Caspeco booking exports, preview parsed rows, and save daily or
-          weekday metrics for analytics and forecasts.
+          Upload Caspeco booking exports, preview parsed rows, and save daily or weekday
+          metrics for analytics and forecasts.
         </p>
       </div>
 
