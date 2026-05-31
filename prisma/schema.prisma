@@ -21,6 +21,7 @@ model Venue {
   bookingInquiries BookingInquiry[]
   venueRules       VenueRule[]
   packages         Package[]
+  managerBriefings ManagerBriefing[]
 
   @@unique([name, city])
   @@index([city])
@@ -155,4 +156,29 @@ model Package {
 
   @@unique([venueId, name])
   @@index([venueId, active])
+}
+
+model ManagerBriefing {
+  id                         String   @id @default(cuid())
+  venueId                    String
+  weekStartDate              DateTime
+  weekEndDate                DateTime
+  providerMode               String
+  executiveSummary           String
+  expectedDemand             String
+  busiestUpcomingDays        String
+  quietestUpcomingDays       String
+  staffingRecommendations    String
+  promotionRecommendations   String
+  packageUpsellOpportunities String
+  risksOrUnusualPatterns     String
+  suggestedManagerActions    String
+  sourceSnapshot             String
+  createdAt                  DateTime @default(now())
+  updatedAt                  DateTime @updatedAt
+
+  venue Venue @relation(fields: [venueId], references: [id], onDelete: Cascade)
+
+  @@index([venueId, weekStartDate])
+  @@index([venueId, createdAt])
 }
