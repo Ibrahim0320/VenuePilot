@@ -2,88 +2,92 @@ import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
+const defaultVenue = {
+  name: "Biljardpalatset Göteborg AB",
+  city: "Göteborg",
+  venueType: "billiards_restaurant"
+};
+
+const defaultRules = [
+  {
+    key: "opening_hours_placeholder",
+    value: "Opening hours to be confirmed by venue staff before live use.",
+    category: "opening_hours"
+  },
+  {
+    key: "deposit_policy_placeholder",
+    value: "Deposit policy to be confirmed for larger groups and events.",
+    category: "payments"
+  },
+  {
+    key: "group_booking_threshold",
+    value: "8",
+    category: "booking_rules"
+  },
+  {
+    key: "escalation_threshold",
+    value: "20",
+    category: "human_review"
+  },
+  {
+    key: "package_rules_placeholder",
+    value: "Package rules and availability must be verified by staff.",
+    category: "packages"
+  },
+  {
+    key: "tone_of_voice_rules",
+    value:
+      "Friendly, clear and professional. Never imply that AI has confirmed a booking without staff approval.",
+    category: "ai_tone"
+  }
+];
+
+const defaultPackages = [
+  {
+    name: "Billiards group booking",
+    description: "Placeholder package for billiards reservations and group inquiries.",
+    minGuests: 2,
+    maxGuests: null,
+    priceDescription: "Pricing to be confirmed by venue staff.",
+    active: true
+  },
+  {
+    name: "Food and billiards event",
+    description:
+      "Placeholder package for guests asking about billiards with food or event service.",
+    minGuests: 8,
+    maxGuests: null,
+    priceDescription: "Food, drink and table pricing to be confirmed by staff.",
+    active: true
+  }
+];
+
 async function main() {
   const venue = await prisma.venue.upsert({
-    where: { slug: "biljardpalatset-goteborg" },
-    update: {
-      name: "Biljardpalatset Goteborg",
-      legalName: "Biljardpalatset Goteborg AB",
-      timezone: "Europe/Stockholm"
+    where: {
+      name_city: {
+        name: defaultVenue.name,
+        city: defaultVenue.city
+      }
     },
-    create: {
-      slug: "biljardpalatset-goteborg",
-      name: "Biljardpalatset Goteborg",
-      legalName: "Biljardpalatset Goteborg AB",
-      timezone: "Europe/Stockholm"
-    }
+    update: defaultVenue,
+    create: defaultVenue
   });
 
-  await prisma.user.upsert({
-    where: { email: "manager@biljardpalatset.example" },
-    update: {
+  await prisma.venueRule.deleteMany({ where: { venueId: venue.id } });
+  await prisma.venueRule.createMany({
+    data: defaultRules.map((rule) => ({
       venueId: venue.id,
-      name: "Venue Manager",
-      role: "manager"
-    },
-    create: {
-      venueId: venue.id,
-      name: "Venue Manager",
-      email: "manager@biljardpalatset.example",
-      role: "manager"
-    }
+      ...rule
+    }))
   });
 
-  await prisma.openingHour.deleteMany({ where: { venueId: venue.id } });
-  await prisma.openingHour.createMany({
-    data: [
-      { venueId: venue.id, weekday: 1, opensAt: "15:00", closesAt: "23:00" },
-      { venueId: venue.id, weekday: 2, opensAt: "15:00", closesAt: "23:00" },
-      { venueId: venue.id, weekday: 3, opensAt: "15:00", closesAt: "23:00" },
-      { venueId: venue.id, weekday: 4, opensAt: "15:00", closesAt: "23:00" },
-      { venueId: venue.id, weekday: 5, opensAt: "15:00", closesAt: "01:00" },
-      { venueId: venue.id, weekday: 6, opensAt: "12:00", closesAt: "01:00" },
-      { venueId: venue.id, weekday: 0, opensAt: "12:00", closesAt: "22:00" }
-    ]
-  });
-
-  await prisma.venueRule.upsert({
-    where: { venueId_key: { venueId: venue.id, key: "human_approval" } },
-    update: {
-      value: "required",
-      label: "Human approval",
-      description: "Guest-facing AI drafts must be approved by staff."
-    },
-    create: {
+  await prisma.package.deleteMany({ where: { venueId: venue.id } });
+  await prisma.package.createMany({
+    data: defaultPackages.map((venuePackage) => ({
       venueId: venue.id,
-      key: "human_approval",
-      label: "Human approval",
-      value: "required",
-      description: "Guest-facing AI drafts must be approved by staff."
-    }
-  });
-
-  await prisma.venuePackage.upsert({
-    where: { venueId_name: { venueId: venue.id, name: "Billiards booking" } },
-    update: {
-      description: "Standard billiards reservation placeholder."
-    },
-    create: {
-      venueId: venue.id,
-      name: "Billiards booking",
-      description: "Standard billiards reservation placeholder."
-    }
-  });
-
-  await prisma.venueArea.upsert({
-    where: { venueId_name: { venueId: venue.id, name: "Main billiards floor" } },
-    update: {
-      description: "Primary area for billiards bookings."
-    },
-    create: {
-      venueId: venue.id,
-      name: "Main billiards floor",
-      description: "Primary area for billiards bookings."
-    }
+      ...venuePackage
+    }))
   });
 }
 
