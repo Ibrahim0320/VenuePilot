@@ -42,6 +42,7 @@ model DailyMetric {
 
   venue Venue @relation(fields: [venueId], references: [id], onDelete: Cascade)
 
+  @@unique([venueId, date])
   @@index([venueId, date])
 }
 
@@ -60,6 +61,7 @@ model WeekdayMetric {
 
   venue Venue @relation(fields: [venueId], references: [id], onDelete: Cascade)
 
+  @@unique([venueId, weekday])
   @@index([venueId, weekday])
 }
 
