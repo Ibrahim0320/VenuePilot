@@ -66,18 +66,20 @@ model WeekdayMetric {
 }
 
 model Forecast {
-  id               String   @id @default(cuid())
-  venueId          String
-  date             DateTime
-  expectedGuests   Int
-  expectedBookings Int
-  confidence       String
-  demandLevel      String
-  explanation      String
-  createdAt        DateTime @default(now())
+  id                 String   @id @default(cuid())
+  venueId            String
+  date               DateTime
+  expectedGuests     Int
+  expectedBookings   Int
+  confidence         String
+  demandLevel        String
+  explanation        String
+  recommendedActions String
+  createdAt          DateTime @default(now())
 
   venue Venue @relation(fields: [venueId], references: [id], onDelete: Cascade)
 
+  @@unique([venueId, date])
   @@index([venueId, date])
 }
 
