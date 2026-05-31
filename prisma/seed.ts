@@ -8,15 +8,31 @@ const defaultVenue = {
   venueType: "billiards_restaurant"
 };
 
+const legacyRuleKeys = [
+  "opening_hours_placeholder",
+  "deposit_policy_placeholder",
+  "escalation_threshold",
+  "package_rules_placeholder",
+  "tone_of_voice_rules"
+];
+
 const defaultRules = [
   {
-    key: "opening_hours_placeholder",
-    value: "Opening hours to be confirmed by venue staff before live use.",
+    key: "opening_hours",
+    value:
+      "Opening hours placeholder: confirm weekday, weekend and holiday hours with venue staff before live use.",
     category: "opening_hours"
   },
   {
-    key: "deposit_policy_placeholder",
-    value: "Deposit policy to be confirmed for larger groups and events.",
+    key: "booking_policy",
+    value:
+      "Bookings should be prepared as staff-reviewable summaries. Confirm availability, table allocation and special requests before replying to guests.",
+    category: "booking_rules"
+  },
+  {
+    key: "deposit_policy",
+    value:
+      "Deposit policy placeholder: larger groups and private events may require a deposit, but staff must confirm the amount and terms.",
     category: "payments"
   },
   {
@@ -25,39 +41,65 @@ const defaultRules = [
     category: "booking_rules"
   },
   {
-    key: "escalation_threshold",
+    key: "large_group_escalation_threshold",
     value: "20",
     category: "human_review"
   },
   {
-    key: "package_rules_placeholder",
-    value: "Package rules and availability must be verified by staff.",
-    category: "packages"
+    key: "available_activities",
+    value: JSON.stringify(["billiards", "restaurant", "event", "private_booking"]),
+    category: "activities"
   },
   {
-    key: "tone_of_voice_rules",
+    key: "tone_of_voice",
     value:
-      "Friendly, clear and professional. Never imply that AI has confirmed a booking without staff approval.",
+      "Friendly, clear and professional. Be helpful without overpromising. Never imply that AI has confirmed a booking without staff approval.",
     category: "ai_tone"
+  },
+  {
+    key: "human_review_rules",
+    value:
+      "Staff must review all guest-facing drafts, large group requests, deposit questions, unusual opening-hour requests and booking changes before anything is sent.",
+    category: "human_review"
+  },
+  {
+    key: "auto_reply_allowed",
+    value: "false",
+    category: "ai_safety"
+  },
+  {
+    key: "ai_autonomy_level",
+    value: "draft_only",
+    category: "ai_safety"
   }
 ];
 
 const defaultPackages = [
   {
     name: "Billiards group booking",
-    description: "Placeholder package for billiards reservations and group inquiries.",
+    description:
+      "Billiards tables for small groups, with staff-confirmed availability and timing.",
     minGuests: 2,
-    maxGuests: null,
+    maxGuests: 12,
     priceDescription: "Pricing to be confirmed by venue staff.",
     active: true
   },
   {
     name: "Food and billiards event",
     description:
-      "Placeholder package for guests asking about billiards with food or event service.",
+      "Combined billiards and restaurant option for groups that want food or drinks with the activity.",
     minGuests: 8,
-    maxGuests: null,
+    maxGuests: 40,
     priceDescription: "Food, drink and table pricing to be confirmed by staff.",
+    active: true
+  },
+  {
+    name: "Private event inquiry",
+    description:
+      "Staff-reviewed package path for larger events, private bookings and corporate groups.",
+    minGuests: 20,
+    maxGuests: null,
+    priceDescription: "Custom quote required after staff review.",
     active: true
   }
 ];
@@ -74,21 +116,46 @@ async function main() {
     create: defaultVenue
   });
 
-  await prisma.venueRule.deleteMany({ where: { venueId: venue.id } });
-  await prisma.venueRule.createMany({
-    data: defaultRules.map((rule) => ({
+  await prisma.venueRule.deleteMany({
+    where: {
       venueId: venue.id,
-      ...rule
-    }))
+      key: {
+        in: legacyRuleKeys
+      }
+    }
   });
 
-  await prisma.package.deleteMany({ where: { venueId: venue.id } });
-  await prisma.package.createMany({
-    data: defaultPackages.map((venuePackage) => ({
-      venueId: venue.id,
-      ...venuePackage
-    }))
-  });
+  for (const rule of defaultRules) {
+    await prisma.venueRule.upsert({
+      where: {
+        venueId_key: {
+          venueId: venue.id,
+          key: rule.key
+        }
+      },
+      update: rule,
+      create: {
+        venueId: venue.id,
+        ...rule
+      }
+    });
+  }
+
+  for (const venuePackage of defaultPackages) {
+    await prisma.package.upsert({
+      where: {
+        venueId_name: {
+          venueId: venue.id,
+          name: venuePackage.name
+        }
+      },
+      update: venuePackage,
+      create: {
+        venueId: venue.id,
+        ...venuePackage
+      }
+    });
+  }
 }
 
 main()
