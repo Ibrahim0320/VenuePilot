@@ -44,8 +44,8 @@ export function MonthlyComparisonChart({ data, metric }: MonthlyComparisonChartP
   if (data.length === 0) {
     return (
       <EmptyState
-        title="No daily data yet"
-        description="Upload a Caspeco daily booking export to see monthly demand patterns."
+        title="Daily booking data needed"
+        description="Upload a Caspeco daily booking export to show monthly guest and booking patterns."
         icon={<BarChart3 className="h-5 w-5" aria-hidden="true" />}
       />
     );
@@ -75,7 +75,7 @@ export function MonthlyComparisonChart({ data, metric }: MonthlyComparisonChartP
           return (
             <div
               key={bucket.key}
-              className="grid gap-2 rounded-lg border border-stone-100 bg-stone-50 px-3 py-3 sm:grid-cols-[5.5rem_1fr_6rem]"
+              className="grid gap-3 rounded-lg border border-stone-200 bg-stone-50 px-3 py-3 sm:grid-cols-[6rem_1fr_7rem]"
             >
               <div>
                 <p className="text-sm font-medium text-ink">{bucket.label}</p>
@@ -83,7 +83,7 @@ export function MonthlyComparisonChart({ data, metric }: MonthlyComparisonChartP
                   {bucket.rowCount} day{bucket.rowCount === 1 ? "" : "s"}
                 </p>
               </div>
-              <div className="space-y-1.5 self-center">
+              <div className="space-y-2 self-center">
                 <MetricBar
                   value={currentValue}
                   maxValue={maxValue}
@@ -96,7 +96,7 @@ export function MonthlyComparisonChart({ data, metric }: MonthlyComparisonChartP
                 />
               </div>
               <div className="flex items-center justify-between gap-3 text-xs text-stone-600 sm:block sm:text-right">
-                <p>{formatInteger(currentValue)}</p>
+                <p className="font-semibold text-ink">{formatInteger(currentValue)}</p>
                 <p>{formatInteger(previousValue)}</p>
               </div>
             </div>
@@ -117,8 +117,8 @@ export function TrendChart({ data }: TrendChartProps) {
   if (points.length === 0) {
     return (
       <EmptyState
-        title="No daily trend yet"
-        description="Upload a daily export to compare guests and bookings over time."
+        title="Daily trend will appear after import"
+        description="Upload a daily export to compare guest flow and booking pace over time."
         icon={<BarChart3 className="h-5 w-5" aria-hidden="true" />}
       />
     );
@@ -142,15 +142,19 @@ export function TrendChart({ data }: TrendChartProps) {
           <span className="h-2.5 w-2.5 rounded-full bg-copper" />
           Bookings
         </span>
-        <span className="text-stone-500">Lines are scaled to show trend shape.</span>
+        <span className="text-stone-500">
+          Lines show booking pace and guest flow across imported dates.
+        </span>
       </div>
-      <div className="rounded-lg border border-stone-100 bg-stone-50 p-3">
+      <div className="overflow-x-auto rounded-lg border border-stone-200 bg-stone-50 p-3">
         <svg
           role="img"
           aria-label="Guests and bookings over time"
           viewBox="0 0 640 240"
-          className="h-60 w-full"
+          className="h-60 min-w-[560px] w-full"
         >
+          <line x1="44" y1="44" x2="612" y2="44" stroke="#e7e5e4" strokeWidth="1" />
+          <line x1="44" y1="120" x2="612" y2="120" stroke="#e7e5e4" strokeWidth="1" />
           <line x1="44" y1="196" x2="612" y2="196" stroke="#d6d3d1" strokeWidth="1" />
           <line x1="44" y1="44" x2="44" y2="196" stroke="#d6d3d1" strokeWidth="1" />
           <polyline
@@ -169,6 +173,24 @@ export function TrendChart({ data }: TrendChartProps) {
             strokeLinejoin="round"
             strokeWidth="4"
           />
+          {points.length > 1
+            ? guestsPolyline.split(" ").map((point, index) => {
+                const [x, y] = point.split(",");
+
+                return (
+                  <circle key={`guest-${index}`} cx={x} cy={y} r="3.5" fill="#059669" />
+                );
+              })
+            : null}
+          {points.length > 1
+            ? bookingsPolyline.split(" ").map((point, index) => {
+                const [x, y] = point.split(",");
+
+                return (
+                  <circle key={`booking-${index}`} cx={x} cy={y} r="3" fill="#b8683b" />
+                );
+              })
+            : null}
           {points.length === 1 ? (
             <>
               <circle cx="328" cy="120" r="5" fill="#059669" />
@@ -193,7 +215,7 @@ export function WeekdayPerformanceChart({ data }: WeekdayPerformanceChartProps) 
   if (activeRows.length === 0) {
     return (
       <EmptyState
-        title="No weekday data yet"
+        title="Weekday data needed"
         description="Upload a Caspeco weekday export to compare demand by day of week."
         icon={<CalendarX2 className="h-5 w-5" aria-hidden="true" />}
       />
@@ -222,12 +244,12 @@ export function WeekdayPerformanceChart({ data }: WeekdayPerformanceChartProps) 
           <div
             key={row.weekday}
             className={cn(
-              "grid gap-2 rounded-lg border border-stone-100 px-3 py-3 sm:grid-cols-[6rem_1fr_7rem]",
+              "grid gap-3 rounded-lg border border-stone-200 px-3 py-3 sm:grid-cols-[6.5rem_1fr_8rem]",
               row.rowCount > 0 ? "bg-stone-50" : "bg-white text-stone-400"
             )}
           >
             <p className="text-sm font-medium text-ink">{row.label}</p>
-            <div className="space-y-1.5 self-center">
+            <div className="space-y-2 self-center">
               <MetricBar
                 value={row.guestsCurrentYear}
                 maxValue={maxValue}
@@ -240,7 +262,9 @@ export function WeekdayPerformanceChart({ data }: WeekdayPerformanceChartProps) 
               />
             </div>
             <div className="flex items-center justify-between gap-3 text-xs text-stone-600 sm:block sm:text-right">
-              <p>{formatInteger(row.guestsCurrentYear)} guests</p>
+              <p className="font-semibold text-ink">
+                {formatInteger(row.guestsCurrentYear)} guests
+              </p>
               <p>{formatInteger(row.bookingsCurrentYear)} bookings</p>
             </div>
           </div>
@@ -272,9 +296,9 @@ export function RankedDaysList({
       {days.map((day, index) => (
         <div
           key={`${day.label}-${index}`}
-          className="grid gap-3 py-3 sm:grid-cols-[2.5rem_1fr_7rem]"
+          className="grid gap-3 py-3 sm:grid-cols-[2.5rem_1fr_8rem]"
         >
-          <div className="flex h-8 w-8 items-center justify-center rounded-md bg-stone-100 text-sm font-semibold text-stone-600">
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-stone-100 text-sm font-semibold text-stone-600">
             {index + 1}
           </div>
           <div className="min-w-0">
@@ -334,9 +358,9 @@ function MetricBar({
   className: string;
 }) {
   return (
-    <div className="h-2.5 rounded-full bg-stone-200">
+    <div className="h-3 rounded-full bg-stone-200">
       <div
-        className={cn("h-2.5 rounded-full", className)}
+        className={cn("h-3 rounded-full", className)}
         style={{ width: `${barPercent(value, maxValue)}%` }}
       />
     </div>

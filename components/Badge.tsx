@@ -4,7 +4,7 @@ import { cn } from "@/lib/utils";
 type BadgeVariant = "neutral" | "success" | "warning" | "danger" | "info";
 
 const variantStyles: Record<BadgeVariant, string> = {
-  neutral: "border-stone-200 bg-white text-stone-700",
+  neutral: "border-stone-200 bg-stone-50 text-stone-700",
   success: "border-emerald-200 bg-emerald-50 text-emerald-800",
   warning: "border-amber-200 bg-amber-50 text-amber-800",
   danger: "border-rose-200 bg-rose-50 text-rose-800",
@@ -23,7 +23,7 @@ export function Badge({
   return (
     <span
       className={cn(
-        "inline-flex items-center rounded-full border px-2.5 py-1 text-xs font-medium",
+        "inline-flex items-center rounded-full border px-2.5 py-1 text-xs font-semibold",
         variantStyles[variant],
         className
       )}

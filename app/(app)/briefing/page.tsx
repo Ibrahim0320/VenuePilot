@@ -163,7 +163,7 @@ export default async function BriefingPage({ searchParams }: BriefingPageProps) 
           action={<Badge variant="neutral">{venue?.city ?? "No venue"}</Badge>}
         >
           <EmptyState
-            title="No saved briefing yet"
+            title="Generate the first weekly briefing"
             description="Generate a briefing to create a staff-reviewable weekly note. VenuePilot will save it and show the facts used."
             icon={<ClipboardList className="h-5 w-5" aria-hidden="true" />}
           />

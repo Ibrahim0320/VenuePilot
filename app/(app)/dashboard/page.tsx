@@ -1,7 +1,15 @@
+import Link from "next/link";
+import type { ReactNode } from "react";
 import {
+  ArrowRight,
   BarChart3,
   CalendarDays,
   CalendarRange,
+  ClipboardCheck,
+  FileSpreadsheet,
+  MessageSquareText,
+  ShieldCheck,
+  Sparkles,
   TrendingDown,
   TrendingUp,
   UsersRound
@@ -17,6 +25,7 @@ import {
 import { SectionCard } from "@/components/SectionCard";
 import { StatCard } from "@/components/StatCard";
 import { buildDashboardAnalytics } from "@/lib/dashboard/analytics";
+import type { DashboardAnalytics } from "@/lib/dashboard/analytics";
 import { prisma } from "@/lib/db/prisma";
 
 export const dynamic = "force-dynamic";
@@ -66,84 +75,138 @@ export default async function DashboardPage() {
   const weekdayMetrics = venue?.weekdayMetrics ?? [];
   const analytics = buildDashboardAnalytics(dailyMetrics, weekdayMetrics);
   const rangeLabel = getRangeLabel(dailyMetrics);
+  const managerFocus =
+    analytics.insights.find((insight) => insight.title === "Capacity implication") ??
+    analytics.insights[0];
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-        <div>
-          <Badge variant="info">Data-backed dashboard</Badge>
-          <h1 className="mt-3 text-2xl font-semibold text-ink">Manager dashboard</h1>
-          <p className="mt-2 text-sm text-stone-600">
-            Booking demand, guest flow and practical venue signals for{" "}
-            {venue?.name ?? "the default venue"}.
-          </p>
-        </div>
-        <div className="rounded-lg border border-stone-200 bg-white px-4 py-3 text-sm text-stone-600 shadow-sm">
-          <p className="font-medium text-ink">{venue?.city ?? "Venue setup"}</p>
-          <p>{rangeLabel}</p>
-        </div>
-      </div>
+      <DashboardHero
+        venueName={venue?.name ?? "Venue"}
+        venueCity={venue?.city ?? "Venue setup"}
+        rangeLabel={rangeLabel}
+        analytics={analytics}
+        managerFocus={managerFocus}
+      />
+
+      {!analytics.hasDailyData && !analytics.hasWeekdayData ? (
+        <EmptyState
+          title="Upload booking data to activate the dashboard"
+          description="Start with a Caspeco daily or weekday export. VenuePilot will turn it into guest trends, demand signals and manager-ready recommendations."
+          icon={<FileSpreadsheet className="h-5 w-5" aria-hidden="true" />}
+          action={
+            <Link
+              href="/data"
+              className="inline-flex items-center justify-center gap-2 rounded-lg bg-ink px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-stone-800"
+            >
+              Upload data
+              <ArrowRight className="h-4 w-4" aria-hidden="true" />
+            </Link>
+          }
+        />
+      ) : null}
 
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         <StatCard
-          label="Total guests current year"
+          label="Guests this year"
           value={formatInteger(analytics.totals.guestsCurrentYear)}
-          helper="From imported daily booking rows."
+          helper="Total guests from imported daily rows."
           icon={<UsersRound className="h-5 w-5" aria-hidden="true" />}
           tone="info"
         />
         <StatCard
-          label="Total guests previous year"
+          label="Guests last year"
           value={formatInteger(analytics.totals.guestsPreviousYear)}
-          helper="Same imported periods last year."
+          helper="Previous-year comparison for the imported dates."
           icon={<UsersRound className="h-5 w-5" aria-hidden="true" />}
         />
         <StatCard
           label="Guest growth"
           value={formatPercent(analytics.totals.guestGrowthPercent)}
-          helper="Current year vs previous year."
+          helper="Current year compared with previous year."
           icon={growthIcon(analytics.totals.guestGrowthPercent)}
           tone={growthTone(analytics.totals.guestGrowthPercent)}
         />
         <StatCard
-          label="Total bookings current year"
+          label="Bookings this year"
           value={formatInteger(analytics.totals.bookingsCurrentYear)}
           helper="Confirmed booking count in imported data."
           icon={<CalendarDays className="h-5 w-5" aria-hidden="true" />}
           tone="info"
         />
         <StatCard
-          label="Total bookings previous year"
+          label="Bookings last year"
           value={formatInteger(analytics.totals.bookingsPreviousYear)}
-          helper="Previous-year comparison count."
+          helper="Previous-year booking baseline."
           icon={<CalendarDays className="h-5 w-5" aria-hidden="true" />}
         />
         <StatCard
           label="Booking growth"
           value={formatPercent(analytics.totals.bookingGrowthPercent)}
-          helper="Current year vs previous year."
+          helper="A signal for demand and admin workload."
           icon={growthIcon(analytics.totals.bookingGrowthPercent)}
           tone={growthTone(analytics.totals.bookingGrowthPercent)}
         />
         <StatCard
-          label="Avg guests / booking current"
+          label="Avg guests per booking"
           value={formatDecimal(analytics.totals.averageGuestsPerBookingCurrentYear)}
-          helper="A quick read on party size."
+          helper="Current average party size."
           icon={<BarChart3 className="h-5 w-5" aria-hidden="true" />}
           tone="success"
         />
         <StatCard
-          label="Avg guests / booking previous"
+          label="Last year's party size"
           value={formatDecimal(analytics.totals.averageGuestsPerBookingPreviousYear)}
-          helper="Baseline for party-size movement."
+          helper="Baseline for group-size movement."
           icon={<BarChart3 className="h-5 w-5" aria-hidden="true" />}
         />
+      </div>
+
+      <div className="grid gap-6 xl:grid-cols-[1fr_360px]">
+        <SectionCard
+          title="Guests vs bookings over time"
+          description="A manager-friendly view of how demand moves across imported dates."
+          action={<Badge variant="info">{dailyMetrics.length} daily rows</Badge>}
+        >
+          <TrendChart data={dailyMetrics} />
+        </SectionCard>
+
+        <SectionCard
+          title="Manager insights"
+          description="Deterministic signals from booking history."
+          action={<Badge variant="success">No AI required</Badge>}
+        >
+          {analytics.hasDailyData || analytics.hasWeekdayData ? (
+            <div className="space-y-3">
+              {analytics.insights.map((insight) => (
+                <div
+                  key={`${insight.title}-${insight.value}`}
+                  className="rounded-lg border border-stone-200 bg-stone-50 p-4"
+                >
+                  <p className="text-xs font-semibold uppercase tracking-wide text-stone-500">
+                    {insight.title}
+                  </p>
+                  <p className="mt-1 font-semibold text-ink">{insight.value}</p>
+                  <p className="mt-2 text-sm leading-6 text-stone-600">
+                    {insight.detail}
+                  </p>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <EmptyState
+              title="Insights will appear after import"
+              description="Upload booking data to see strongest months, weekday demand, party-size movement and capacity implications."
+              icon={<TrendingUp className="h-5 w-5" aria-hidden="true" />}
+            />
+          )}
+        </SectionCard>
       </div>
 
       <div className="grid gap-6 xl:grid-cols-2">
         <SectionCard
           title="Guests by month"
-          description="Current year compared with the same periods last year."
+          description="Current-year guest demand compared with the same imported periods last year."
         >
           <MonthlyComparisonChart data={analytics.monthBuckets} metric="guests" />
         </SectionCard>
@@ -156,49 +219,39 @@ export default async function DashboardPage() {
         </SectionCard>
       </div>
 
-      <SectionCard
-        title="Guests vs bookings over time"
-        description="Daily demand shape from imported Caspeco date exports."
-      >
-        <TrendChart data={dailyMetrics} />
-      </SectionCard>
-
-      <div className="grid gap-6 xl:grid-cols-[1.2fr_0.8fr]">
+      <div className="grid gap-6 xl:grid-cols-[1.15fr_0.85fr]">
         <SectionCard
           title="Weekday performance"
-          description="Which weekdays carry the most guest and booking demand."
+          description="See which weekdays carry the most guest and booking demand."
         >
           <WeekdayPerformanceChart data={analytics.weekdayBuckets} />
         </SectionCard>
 
         <SectionCard
-          title="Manager insights"
-          description="Deterministic signals from imported booking history."
+          title="Next manager moves"
+          description="Where the imported data should lead the team next."
+          action={<Badge variant="warning">Human decision</Badge>}
         >
-          {analytics.hasDailyData || analytics.hasWeekdayData ? (
-            <div className="space-y-3">
-              {analytics.insights.map((insight) => (
-                <div
-                  key={`${insight.title}-${insight.value}`}
-                  className="rounded-lg border border-stone-100 bg-stone-50 p-4"
-                >
-                  <p className="text-xs font-medium uppercase tracking-wide text-stone-500">
-                    {insight.title}
-                  </p>
-                  <p className="mt-1 font-semibold text-ink">{insight.value}</p>
-                  <p className="mt-2 text-sm leading-6 text-stone-600">
-                    {insight.detail}
-                  </p>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <EmptyState
-              title="No insights yet"
-              description="Upload a daily or weekday Caspeco export to generate manager-ready demand signals."
-              icon={<TrendingUp className="h-5 w-5" aria-hidden="true" />}
+          <div className="space-y-3">
+            <ManagerMove
+              icon={<LineIcon />}
+              title="Forecast the next service window"
+              description="Use deterministic demand logic to identify quiet, busy and peak days."
+              href="/forecast"
             />
-          )}
+            <ManagerMove
+              icon={<MessageSquareText className="h-4 w-4" aria-hidden="true" />}
+              title="Prepare booking replies faster"
+              description="Paste a customer inquiry and generate a staff-reviewable draft."
+              href="/copilot"
+            />
+            <ManagerMove
+              icon={<ClipboardCheck className="h-4 w-4" aria-hidden="true" />}
+              title="Approve AI-prepared drafts"
+              description="Review, edit and approve internally before anything is sent."
+              href="/approvals"
+            />
+          </div>
         </SectionCard>
       </div>
 
@@ -209,8 +262,8 @@ export default async function DashboardPage() {
         >
           <RankedDaysList
             days={analytics.topBusiestDays}
-            emptyTitle="No busiest days yet"
-            emptyDescription="Upload daily metrics to rank the highest-demand days."
+            emptyTitle="Busiest days will appear after import"
+            emptyDescription="Upload daily metrics to rank the highest-demand days and protect peak capacity."
           />
         </SectionCard>
 
@@ -220,8 +273,8 @@ export default async function DashboardPage() {
         >
           <RankedDaysList
             days={analytics.topQuietestDays}
-            emptyTitle="No quietest days yet"
-            emptyDescription="Upload daily metrics to rank the lowest-demand days."
+            emptyTitle="Quietest days will appear after import"
+            emptyDescription="Upload daily metrics to identify off-peak windows for promotions and outreach."
           />
         </SectionCard>
       </div>
@@ -229,9 +282,141 @@ export default async function DashboardPage() {
   );
 }
 
+function DashboardHero({
+  venueName,
+  venueCity,
+  rangeLabel,
+  analytics,
+  managerFocus
+}: {
+  venueName: string;
+  venueCity: string;
+  rangeLabel: string;
+  analytics: DashboardAnalytics;
+  managerFocus?: DashboardAnalytics["insights"][number];
+}) {
+  return (
+    <section className="overflow-hidden rounded-lg border border-stone-800 bg-ink text-white shadow-soft">
+      <div className="grid gap-6 p-5 sm:p-6 lg:grid-cols-[minmax(0,1fr)_360px]">
+        <div>
+          <Badge
+            variant="success"
+            className="border-emerald-300 bg-emerald-300/15 text-emerald-100"
+          >
+            Manager dashboard
+          </Badge>
+          <h1 className="mt-4 text-2xl font-semibold text-white sm:text-3xl">
+            Demand, staffing and booking decisions for {venueName}.
+          </h1>
+          <p className="mt-3 max-w-3xl text-sm leading-6 text-stone-300">
+            A non-technical workspace for understanding booking trends, spotting quiet
+            days, protecting peak capacity and preparing AI-assisted actions for human
+            approval.
+          </p>
+          <div className="mt-5 flex flex-col gap-3 sm:flex-row">
+            <Link
+              href="/data"
+              className="inline-flex items-center justify-center gap-2 rounded-lg bg-emerald-300 px-4 py-2.5 text-sm font-semibold text-ink transition hover:bg-emerald-200"
+            >
+              Import booking data
+              <ArrowRight className="h-4 w-4" aria-hidden="true" />
+            </Link>
+            <Link
+              href="/briefing"
+              className="inline-flex items-center justify-center gap-2 rounded-lg border border-white/25 bg-white/10 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-white/15"
+            >
+              Generate briefing
+              <Sparkles className="h-4 w-4" aria-hidden="true" />
+            </Link>
+          </div>
+        </div>
+
+        <div className="rounded-lg border border-white/15 bg-white/10 p-4">
+          <p className="text-xs font-semibold uppercase tracking-wide text-stone-300">
+            Venue snapshot
+          </p>
+          <div className="mt-4 space-y-4">
+            <HeroMetric label="Venue" value={venueCity} helper={rangeLabel} />
+            <HeroMetric
+              label="Current guests"
+              value={formatInteger(analytics.totals.guestsCurrentYear)}
+              helper={`${formatInteger(
+                analytics.totals.bookingsCurrentYear
+              )} bookings imported`}
+            />
+            <div className="rounded-lg bg-white p-4 text-ink">
+              <div className="flex items-center gap-2">
+                <ShieldCheck className="h-4 w-4 text-sage" aria-hidden="true" />
+                <p className="text-sm font-semibold">Manager focus</p>
+              </div>
+              <p className="mt-2 text-sm leading-6 text-stone-600">
+                {managerFocus?.detail ??
+                  "Import booking history to unlock staffing and promotion guidance."}
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function HeroMetric({
+  label,
+  value,
+  helper
+}: {
+  label: string;
+  value: string;
+  helper: string;
+}) {
+  return (
+    <div className="rounded-lg border border-white/10 bg-white/10 p-4">
+      <p className="text-xs font-semibold uppercase tracking-wide text-stone-300">
+        {label}
+      </p>
+      <p className="mt-1 text-xl font-semibold text-white">{value}</p>
+      <p className="mt-1 text-xs leading-5 text-stone-300">{helper}</p>
+    </div>
+  );
+}
+
+function ManagerMove({
+  icon,
+  title,
+  description,
+  href
+}: {
+  icon: ReactNode;
+  title: string;
+  description: string;
+  href: string;
+}) {
+  return (
+    <Link
+      href={href}
+      className="group flex gap-3 rounded-lg border border-stone-200 bg-stone-50 p-4 transition hover:bg-white hover:shadow-sm"
+    >
+      <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-white text-sage shadow-sm">
+        {icon}
+      </span>
+      <span>
+        <span className="block text-sm font-semibold text-ink">{title}</span>
+        <span className="mt-1 block text-sm leading-6 text-stone-600">
+          {description}
+        </span>
+      </span>
+    </Link>
+  );
+}
+
+function LineIcon() {
+  return <TrendingUp className="h-4 w-4" aria-hidden="true" />;
+}
+
 function getRangeLabel(metrics: { date: Date }[]): string {
   if (metrics.length === 0) {
-    return "No daily import yet";
+    return "Waiting for daily import";
   }
 
   const sortedMetrics = [...metrics].sort(

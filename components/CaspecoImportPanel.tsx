@@ -104,14 +104,14 @@ export function CaspecoImportPanel() {
 
   return (
     <div className="space-y-5">
-      <div className="rounded-lg border border-dashed border-stone-300 bg-stone-50 p-6">
-        <UploadCloud className="h-8 w-8 text-stone-400" aria-hidden="true" />
+      <div className="rounded-lg border border-dashed border-stone-300 bg-stone-50/80 p-6">
+        <UploadCloud className="h-8 w-8 text-sage" aria-hidden="true" />
         <h2 className="mt-4 text-base font-semibold text-ink">
           Upload Caspeco booking export
         </h2>
         <p className="mt-2 max-w-2xl text-sm leading-6 text-stone-600">
           Supports daily files grouped by date and weekday files grouped by Swedish
-          weekday. Preview parses the workbook without saving rows.
+          weekday. Preview first, then save when the numbers look right.
         </p>
 
         <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:items-center">
@@ -124,13 +124,13 @@ export function CaspecoImportPanel() {
               setSavedSummary(null);
               setError(null);
             }}
-            className="block w-full rounded-md border border-stone-300 bg-white px-3 py-2 text-sm text-stone-700 file:mr-4 file:rounded-md file:border-0 file:bg-ink file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-white"
+            className="block w-full rounded-lg border border-stone-300 bg-white px-3 py-2 text-sm text-stone-700 file:mr-4 file:rounded-lg file:border-0 file:bg-ink file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-white"
           />
           <button
             type="button"
             onClick={previewImport}
             disabled={!file || isPreviewing}
-            className="inline-flex items-center justify-center gap-2 rounded-md bg-ink px-4 py-2 text-sm font-semibold text-white transition hover:bg-stone-800 disabled:cursor-not-allowed disabled:bg-stone-300"
+            className="inline-flex items-center justify-center gap-2 rounded-lg bg-ink px-4 py-2 text-sm font-semibold text-white transition hover:bg-stone-800 disabled:cursor-not-allowed disabled:bg-stone-300"
           >
             <FileSpreadsheet className="h-4 w-4" aria-hidden="true" />
             {isPreviewing ? "Previewing" : "Preview import"}
@@ -139,15 +139,19 @@ export function CaspecoImportPanel() {
       </div>
 
       {error ? (
-        <div className="rounded-lg border border-rose-200 bg-rose-50 p-4 text-sm text-rose-800">
-          {error}
+        <div className="rounded-lg border border-rose-200 bg-rose-50 p-4 text-sm text-rose-900">
+          <p className="font-semibold">Import needs attention</p>
+          <p className="mt-1 leading-6">{error}</p>
         </div>
       ) : null}
 
       {parsed ? (
         <div className="space-y-4">
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
-            <SummaryTile label="Detected type" value={parsed.summary.detectedFileType} />
+            <SummaryTile
+              label="Detected type"
+              value={parsed.summary.detectedFileType}
+            />
             <SummaryTile
               label="Rows detected"
               value={parsed.summary.rowsDetected.toLocaleString()}
@@ -235,7 +239,7 @@ export function CaspecoImportPanel() {
             type="button"
             onClick={saveImport}
             disabled={isSaving}
-            className="inline-flex items-center justify-center gap-2 rounded-md bg-sage px-4 py-2 text-sm font-semibold text-white transition hover:bg-emerald-800 disabled:cursor-not-allowed disabled:bg-stone-300"
+            className="inline-flex items-center justify-center gap-2 rounded-lg bg-sage px-4 py-2 text-sm font-semibold text-white transition hover:bg-emerald-800 disabled:cursor-not-allowed disabled:bg-stone-300"
           >
             <CheckCircle2 className="h-4 w-4" aria-hidden="true" />
             {isSaving ? "Saving" : "Save imported rows"}
@@ -244,8 +248,8 @@ export function CaspecoImportPanel() {
           {savedSummary ? (
             <div className="rounded-lg border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-900">
               Imported {savedSummary.rowsImported.toLocaleString()}{" "}
-              {savedSummary.detectedFileType} rows. Existing rows were updated
-              instead of duplicated.
+              {savedSummary.detectedFileType} rows. Existing rows were updated instead
+              of duplicated.
             </div>
           ) : null}
         </div>

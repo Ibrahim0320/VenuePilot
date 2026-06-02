@@ -302,7 +302,7 @@ function buildInsights(
     });
   }
 
-  if (weakestMonth) {
+  if (weakestMonth && strongestMonth?.key !== weakestMonth.key) {
     insights.push({
       title: "Weakest month",
       value: weakestMonth.label,
@@ -324,7 +324,7 @@ function buildInsights(
     });
   }
 
-  if (quietestWeekday) {
+  if (quietestWeekday && busiestWeekday?.weekday !== quietestWeekday.weekday) {
     insights.push({
       title: "Quietest weekday",
       value: quietestWeekday.label,
@@ -393,7 +393,7 @@ function buildPartySizeInsight(totals: DashboardAnalytics["totals"]): DashboardI
   if (currentAverage === 0 && previousAverage === 0) {
     return {
       title: "Average party size",
-      value: "No bookings yet",
+      value: "Waiting for booking data",
       detail:
         "Imported daily data with bookings is needed before party size can be measured."
     };

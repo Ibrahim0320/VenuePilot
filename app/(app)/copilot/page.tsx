@@ -19,7 +19,7 @@ type CopilotPageProps = {
 };
 
 const inputClassName =
-  "mt-2 w-full rounded-md border border-stone-300 bg-white px-3 py-2 text-sm text-stone-700 outline-none focus:border-sage";
+  "mt-2 w-full rounded-lg border border-stone-300 bg-white px-3 py-2 text-sm text-stone-700 outline-none focus:border-sage";
 const textareaClassName =
   "mt-2 min-h-56 w-full resize-y rounded-lg border border-stone-300 bg-white p-3 text-sm leading-6 text-stone-700 outline-none placeholder:text-stone-400 focus:border-sage";
 
@@ -54,7 +54,7 @@ export default async function CopilotPage({ searchParams }: CopilotPageProps) {
           </p>
         </div>
         <Badge variant={providerMode === "openai" ? "info" : "neutral"}>
-          {providerMode === "openai" ? "OpenAI mode" : "Mock AI mode"}
+          {providerMode === "openai" ? "OpenAI mode" : "Local AI mode"}
         </Badge>
       </div>
 
@@ -89,7 +89,7 @@ export default async function CopilotPage({ searchParams }: CopilotPageProps) {
 
             <button
               type="submit"
-              className="inline-flex items-center gap-2 rounded-md bg-ink px-4 py-2 text-sm font-semibold text-white transition hover:bg-stone-800"
+              className="inline-flex items-center gap-2 rounded-lg bg-ink px-4 py-2 text-sm font-semibold text-white transition hover:bg-stone-800"
             >
               <Send className="h-4 w-4" aria-hidden="true" />
               Analyze and draft
@@ -106,7 +106,7 @@ export default async function CopilotPage({ searchParams }: CopilotPageProps) {
                 {draft.requiresHumanReview ? "Needs review" : "Review optional"}
               </Badge>
             ) : (
-              <Badge variant="neutral">No draft yet</Badge>
+              <Badge variant="neutral">Ready for inquiry</Badge>
             )
           }
         >

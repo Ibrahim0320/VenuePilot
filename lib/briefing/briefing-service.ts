@@ -382,7 +382,7 @@ function buildRiskNotes({
 
   if (context.dailyMetrics.length === 0) {
     notes.push(
-      "No imported daily metrics are available. Treat this briefing as a placeholder until Caspeco daily data is imported."
+      "No imported daily metrics are available. Treat this briefing as a conservative planning note until Caspeco daily data is imported."
     );
   }
 

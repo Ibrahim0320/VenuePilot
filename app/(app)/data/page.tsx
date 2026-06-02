@@ -26,9 +26,9 @@ export default async function DataPage() {
       <div>
         <Badge variant="neutral">Caspeco Excel import</Badge>
         <h1 className="mt-3 text-2xl font-semibold text-ink">Data import</h1>
-        <p className="mt-2 text-sm text-stone-600">
-          Upload Caspeco booking exports, preview parsed rows, and save daily or weekday
-          metrics for analytics and forecasts.
+        <p className="mt-2 max-w-3xl text-sm leading-6 text-stone-600">
+          Upload booking exports, preview parsed rows and save the metrics that power
+          the dashboard, forecasts and manager briefings.
         </p>
       </div>
 
@@ -36,34 +36,34 @@ export default async function DataPage() {
         <StatCard
           label="Daily rows"
           value={(venue?._count.dailyMetrics ?? 0).toLocaleString()}
-          helper="Saved DailyMetric records."
+          helper="Date-based booking metrics ready for trends."
         />
         <StatCard
           label="Weekday rows"
           value={(venue?._count.weekdayMetrics ?? 0).toLocaleString()}
-          helper="Saved WeekdayMetric records."
+          helper="Weekday demand signals for staffing decisions."
         />
         <StatCard
           label="Venue"
           value={venue?.city ?? "Not seeded"}
-          helper={venue?.name ?? "Run npm run db:seed first."}
+          helper={venue?.name ?? "Seed the default venue to begin."}
         />
       </div>
 
       <SectionCard
         title="Upload booking data"
-        description="The parser detects whether the workbook is grouped by date or weekday before saving."
+        description="VenuePilot detects whether the workbook is grouped by date or weekday before saving."
       >
         <CaspecoImportPanel />
       </SectionCard>
 
       <SectionCard
         title="Imported rows"
-        description="Caspeco daily and weekday metric records are upserted by venue/date or venue/weekday."
+        description="Saved metrics are kept unique by venue/date or venue/weekday, so repeat imports update rows instead of duplicating them."
       >
         <EmptyState
-          title="Detailed row browser coming next"
-          description="The import now saves metrics. A row browser and filters can be added on top of DailyMetric and WeekdayMetric."
+          title="Imported metrics are ready for analysis"
+          description="Future integration: add a searchable row browser and export filters when managers need to inspect individual imported records."
           icon={<Database className="h-5 w-5" aria-hidden="true" />}
         />
       </SectionCard>

@@ -27,9 +27,9 @@ import {
 export const dynamic = "force-dynamic";
 
 const inputClassName =
-  "mt-2 w-full rounded-md border border-stone-300 bg-white px-3 py-2 text-sm text-stone-700 outline-none focus:border-sage";
+  "mt-2 w-full rounded-lg border border-stone-300 bg-white px-3 py-2 text-sm text-stone-700 outline-none focus:border-sage";
 const textareaClassName =
-  "mt-2 min-h-28 w-full resize-y rounded-md border border-stone-300 bg-white px-3 py-2 text-sm leading-6 text-stone-700 outline-none focus:border-sage";
+  "mt-2 min-h-28 w-full resize-y rounded-lg border border-stone-300 bg-white px-3 py-2 text-sm leading-6 text-stone-700 outline-none focus:border-sage";
 
 export default async function SettingsPage() {
   const venue = await prisma.venue.findFirst({
@@ -154,7 +154,7 @@ export default async function SettingsPage() {
               {ACTIVITY_OPTIONS.map((activity) => (
                 <label
                   key={activity.value}
-                  className="flex items-center gap-3 rounded-md border border-stone-200 bg-white px-3 py-2 text-sm font-medium text-stone-700"
+                  className="flex items-center gap-3 rounded-lg border border-stone-200 bg-white px-3 py-2 text-sm font-medium text-stone-700"
                 >
                   <input
                     type="checkbox"
@@ -221,7 +221,7 @@ export default async function SettingsPage() {
               {AI_AUTONOMY_OPTIONS.map((option) => (
                 <div
                   key={option.value}
-                  className="rounded-md border border-stone-100 bg-stone-50 p-3"
+                  className="rounded-lg border border-stone-100 bg-stone-50 p-3"
                 >
                   <p className="text-sm font-medium text-ink">{option.label}</p>
                   <p className="mt-1 text-xs leading-5 text-stone-500">
@@ -235,7 +235,7 @@ export default async function SettingsPage() {
           <div className="flex justify-end">
             <button
               type="submit"
-              className="inline-flex items-center justify-center rounded-md bg-ink px-4 py-2 text-sm font-semibold text-white transition hover:bg-stone-800"
+              className="inline-flex items-center justify-center rounded-lg bg-ink px-4 py-2 text-sm font-semibold text-white transition hover:bg-stone-800"
             >
               Save venue rules
             </button>
@@ -285,7 +285,7 @@ export default async function SettingsPage() {
             </div>
           ) : (
             <EmptyState
-              title="No packages yet"
+              title="No packages configured"
               description="Add packages for billiards, restaurant, event and private booking inquiries."
               icon={<PackageCheck className="h-5 w-5" aria-hidden="true" />}
             />
@@ -386,7 +386,7 @@ function PackageFields({
           name="description"
           defaultValue={defaultValues?.description}
           required
-          className="mt-2 min-h-24 w-full resize-y rounded-md border border-stone-300 bg-white px-3 py-2 text-sm leading-6 text-stone-700 outline-none focus:border-sage"
+          className="mt-2 min-h-24 w-full resize-y rounded-lg border border-stone-300 bg-white px-3 py-2 text-sm leading-6 text-stone-700 outline-none focus:border-sage"
         />
       </label>
 
@@ -435,7 +435,7 @@ function PackageFields({
         </label>
         <button
           type="submit"
-          className="inline-flex items-center justify-center rounded-md bg-ink px-4 py-2 text-sm font-semibold text-white transition hover:bg-stone-800"
+          className="inline-flex items-center justify-center rounded-lg bg-ink px-4 py-2 text-sm font-semibold text-white transition hover:bg-stone-800"
         >
           {submitLabel}
         </button>

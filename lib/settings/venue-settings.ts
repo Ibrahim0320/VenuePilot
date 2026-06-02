@@ -80,7 +80,7 @@ export const DEFAULT_VENUE_RULES = [
   {
     key: "opening_hours",
     value:
-      "Opening hours placeholder: confirm weekday, weekend and holiday hours with venue staff before live use.",
+      "Opening hours must be confirmed by venue staff before live use. Treat requests outside configured hours as staff-review items.",
     category: "opening_hours"
   },
   {
@@ -92,7 +92,7 @@ export const DEFAULT_VENUE_RULES = [
   {
     key: "deposit_policy",
     value:
-      "Deposit policy placeholder: larger groups and private events may require a deposit, but staff must confirm the amount and terms.",
+      "Larger groups and private events may require a deposit. Staff confirm deposit amount, payment timing and cancellation terms before replying.",
     category: "payments"
   },
   {
