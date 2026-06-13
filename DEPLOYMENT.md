@@ -91,11 +91,11 @@ After deployment, open:
 https://your-vercel-project.vercel.app
 ```
 
-The landing page stays public. Manager routes such as `/dashboard`, `/data`,
-`/forecast`, `/briefing`, `/copilot`, `/approvals`, and `/settings` redirect to
-`/trial-login` until the shared password is entered. In production, missing
-`TRIAL_ACCESS_PASSWORD` fails closed and protected routes show a configuration
-warning instead of opening the workspace.
+The landing page stays public. Manager routes such as `/dashboard`, `/guide`,
+`/data`, `/forecast`, `/briefing`, `/copilot`, `/approvals`, and `/settings`
+redirect to `/trial-login` until the shared password is entered. In production,
+missing `TRIAL_ACCESS_PASSWORD` fails closed and protected routes show a
+configuration warning instead of opening the workspace.
 
 After login, access is stored in a secure HTTP-only cookie. The workspace topbar
 includes a `Log out` button that clears the cookie.
@@ -106,6 +106,7 @@ Open these routes after login:
 
 - `/`
 - `/dashboard`
+- `/guide`
 - `/data`
 - `/forecast?horizon=14`
 - `/briefing`

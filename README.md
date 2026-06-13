@@ -99,6 +99,7 @@ Postgres schema from a local shell.
 
 - `/` - pitch-ready landing page and demo walkthrough.
 - `/dashboard` - manager dashboard with KPIs, charts, insights, and manager actions.
+- `/guide` - Swedish manager trial guide with print and copy actions.
 - `/data` - Caspeco Excel upload, preview, and save workflow.
 - `/forecast` - deterministic demand forecast with confidence, demand levels, and recommendations.
 - `/briefing` - weekly manager briefing generation and saved briefing history.
@@ -134,6 +135,7 @@ The landing page at `/` stays public so a manager can understand the product.
 Workspace routes are protected when `TRIAL_ACCESS_PASSWORD` is set:
 
 - `/dashboard`
+- `/guide`
 - `/data`
 - `/forecast`
 - `/briefing`

@@ -3,6 +3,7 @@ import { createTrialAccessToken, trialAccessCookie } from "@/lib/trial-access";
 
 const protectedRoutePrefixes = [
   "/dashboard",
+  "/guide",
   "/data",
   "/forecast",
   "/briefing",

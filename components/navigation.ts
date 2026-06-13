@@ -1,5 +1,6 @@
 import {
   BarChart3,
+  BookOpenText,
   CheckCheck,
   Database,
   LayoutDashboard,
@@ -11,6 +12,7 @@ import {
 
 export const navigation = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
+  { href: "/guide", label: "Guide", icon: BookOpenText },
   { href: "/data", label: "Data", icon: Database },
   { href: "/forecast", label: "Forecast", icon: TrendingUp },
   { href: "/briefing", label: "Briefing", icon: Sparkles },
