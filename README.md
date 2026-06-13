@@ -128,6 +128,28 @@ Guest-facing booking decisions remain human-controlled in both modes.
 `OPENAI_API_KEY` is read only on the server and is never exposed through
 `NEXT_PUBLIC_*` variables.
 
+## Trial Access Protection
+
+The landing page at `/` stays public so a manager can understand the product.
+Workspace routes are protected when `TRIAL_ACCESS_PASSWORD` is set:
+
+- `/dashboard`
+- `/data`
+- `/forecast`
+- `/briefing`
+- `/copilot`
+- `/approvals`
+- `/settings`
+
+In production, these routes require the shared trial password before access.
+The password is checked on the server and stored only as a secure HTTP-only
+cookie token. Staff can clear access with the `Log out` button in the workspace
+topbar.
+
+For local development, leaving `TRIAL_ACCESS_PASSWORD` empty allows access and
+shows a warning banner inside the workspace. Do not share a Vercel trial URL
+until `TRIAL_ACCESS_PASSWORD` is configured.
+
 ## Production Setup
 
 Use Vercel with a persistent PostgreSQL database. SQLite is only for local

@@ -1,7 +1,7 @@
 import { LockKeyhole } from "lucide-react";
 import { unlockTrialAccessAction } from "@/app/trial-login/actions";
 import { Badge } from "@/components/Badge";
-import { getAppName } from "@/lib/env";
+import { getAppName, getTrialAccessPassword } from "@/lib/env";
 
 type TrialLoginPageProps = {
   searchParams?: Promise<{
@@ -15,6 +15,8 @@ export default async function TrialLoginPage({ searchParams }: TrialLoginPagePro
   const error = readParam(params.error);
   const nextPath = readParam(params.next) ?? "/dashboard";
   const appName = getAppName();
+  const isProductionMissingPassword =
+    process.env.NODE_ENV === "production" && !getTrialAccessPassword();
 
   return (
     <main className="flex min-h-screen items-center justify-center bg-mist px-4 py-10">
@@ -32,31 +34,39 @@ export default async function TrialLoginPage({ searchParams }: TrialLoginPagePro
           imports and approvals remain staff-controlled inside the app.
         </p>
 
-        {error === "invalid" ? (
+        {error === "missing-config" || isProductionMissingPassword ? (
+          <div className="mt-4 rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-sm leading-6 text-rose-800">
+            Trial access is not configured. Set{" "}
+            <code className="font-semibold">TRIAL_ACCESS_PASSWORD</code> in Vercel
+            before sharing protected manager pages.
+          </div>
+        ) : error === "invalid" ? (
           <div className="mt-4 rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-800">
             That password did not match the trial access setting.
           </div>
         ) : null}
 
-        <form action={unlockTrialAccessAction} className="mt-6 space-y-4">
-          <input type="hidden" name="next" value={nextPath} />
-          <label className="block">
-            <span className="text-sm font-medium text-stone-700">Trial password</span>
-            <input
-              name="password"
-              type="password"
-              required
-              autoComplete="current-password"
-              className="mt-2 w-full rounded-lg border border-stone-300 bg-white px-3 py-2 text-sm text-stone-700 outline-none focus:border-sage"
-            />
-          </label>
-          <button
-            type="submit"
-            className="w-full rounded-lg bg-ink px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-stone-800"
-          >
-            Open manager workspace
-          </button>
-        </form>
+        {!isProductionMissingPassword ? (
+          <form action={unlockTrialAccessAction} className="mt-6 space-y-4">
+            <input type="hidden" name="next" value={nextPath} />
+            <label className="block">
+              <span className="text-sm font-medium text-stone-700">Trial password</span>
+              <input
+                name="password"
+                type="password"
+                required
+                autoComplete="current-password"
+                className="mt-2 w-full rounded-lg border border-stone-300 bg-white px-3 py-2 text-sm text-stone-700 outline-none focus:border-sage"
+              />
+            </label>
+            <button
+              type="submit"
+              className="w-full rounded-lg bg-ink px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-stone-800"
+            >
+              Open manager workspace
+            </button>
+          </form>
+        ) : null}
       </section>
     </main>
   );

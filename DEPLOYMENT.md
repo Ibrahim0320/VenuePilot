@@ -27,7 +27,7 @@ Set these in Vercel under Project Settings > Environment Variables.
 | `OPENAI_API_KEY`        | No                 | `sk-...`           | Server-side only. Leave empty when running mock mode.                                                                                      |
 | `AI_MODE`               | Yes                | `mock`             | Use `mock` for the first trial. Use `openai` only when an API key is configured. `auto` uses OpenAI when a key exists.                     |
 | `NEXT_PUBLIC_APP_NAME`  | Yes                | `VenuePilot`       | Public app display name. Safe for the browser.                                                                                             |
-| `TRIAL_ACCESS_PASSWORD` | Recommended        | `shared-password`  | Enables the lightweight password gate for manager routes and API endpoints. Leave empty only for local development or public demos.        |
+| `TRIAL_ACCESS_PASSWORD` | Required for trial | `shared-password`  | Enables the lightweight password gate for manager routes and API endpoints. Leave empty only for local development.                        |
 
 Never prefix secrets such as `OPENAI_API_KEY`, `DATABASE_URL`, or `DIRECT_URL`
 with `NEXT_PUBLIC_`.
@@ -91,9 +91,14 @@ After deployment, open:
 https://your-vercel-project.vercel.app
 ```
 
-If `TRIAL_ACCESS_PASSWORD` is set, manager routes such as `/dashboard`,
-`/data`, `/forecast`, `/briefing`, `/copilot`, `/approvals`, and `/settings`
-redirect to `/trial-login` until the shared password is entered.
+The landing page stays public. Manager routes such as `/dashboard`, `/data`,
+`/forecast`, `/briefing`, `/copilot`, `/approvals`, and `/settings` redirect to
+`/trial-login` until the shared password is entered. In production, missing
+`TRIAL_ACCESS_PASSWORD` fails closed and protected routes show a configuration
+warning instead of opening the workspace.
+
+After login, access is stored in a secure HTTP-only cookie. The workspace topbar
+includes a `Log out` button that clears the cookie.
 
 ## 5. Verify The Online Trial
 
@@ -158,7 +163,7 @@ No imported booking metrics rely on local files or browser memory after saving.
 - [ ] `AI_MODE=mock` for the first trial unless OpenAI testing is intentional.
 - [ ] `OPENAI_API_KEY` set only when using OpenAI mode.
 - [ ] `NEXT_PUBLIC_APP_NAME=VenuePilot`.
-- [ ] `TRIAL_ACCESS_PASSWORD` set for manager trial access.
+- [ ] `TRIAL_ACCESS_PASSWORD` set for manager trial access before sharing the Vercel URL.
 - [ ] `npm run lint` passes locally.
 - [ ] `npm run typecheck` passes locally.
 - [ ] `npm test` passes locally.

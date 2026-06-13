@@ -1,6 +1,7 @@
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
 import { getAIMode } from "@/lib/env";
+import { createTrialAccessToken } from "@/lib/trial-access";
 
 describe("environment handling", () => {
   it("uses mock mode when AI_MODE explicitly requests mock", () => {
@@ -19,6 +20,15 @@ describe("environment handling", () => {
     withEnv({ AI_MODE: "auto", OPENAI_API_KEY: "sk-test" }, () => {
       assert.equal(getAIMode(), "openai");
     });
+  });
+
+  it("creates a stable trial access token without storing the raw password", async () => {
+    const firstToken = await createTrialAccessToken("shared-password");
+    const secondToken = await createTrialAccessToken("shared-password");
+
+    assert.equal(firstToken, secondToken);
+    assert.notEqual(firstToken, "shared-password");
+    assert.match(firstToken, /^[a-f0-9]{64}$/);
   });
 });
 

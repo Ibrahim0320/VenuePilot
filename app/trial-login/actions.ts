@@ -11,6 +11,12 @@ export async function unlockTrialAccessAction(formData: FormData) {
   const nextPath = normalizeNextPath(readString(formData, "next"));
 
   if (!configuredPassword) {
+    if (process.env.NODE_ENV === "production") {
+      redirect(
+        `/trial-login?error=missing-config&next=${encodeURIComponent(nextPath)}`
+      );
+    }
+
     redirect(nextPath);
   }
 
@@ -28,6 +34,13 @@ export async function unlockTrialAccessAction(formData: FormData) {
   });
 
   redirect(nextPath);
+}
+
+export async function logoutTrialAccessAction() {
+  const cookieStore = await cookies();
+  cookieStore.delete(trialAccessCookie);
+
+  redirect("/");
 }
 
 function readString(formData: FormData, key: string): string {
