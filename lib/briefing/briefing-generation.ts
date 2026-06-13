@@ -14,6 +14,7 @@ import { saveManagerBriefing } from "@/lib/briefing/briefing-persistence";
 import { generateDemandForecasts } from "@/lib/forecast/forecast-service";
 import { saveVenueForecasts } from "@/lib/forecast/forecast-persistence";
 import { getVenueSettingsContext } from "@/lib/settings/venue-settings";
+import { getAIMode } from "@/lib/env";
 
 export async function generateAndSaveWeeklyManagerBriefing({
   venueId,
@@ -28,7 +29,7 @@ export async function generateAndSaveWeeklyManagerBriefing({
   let providerMode: BriefingProviderMode = "deterministic";
   let content = deterministicBriefing;
 
-  if (process.env.OPENAI_API_KEY?.trim()) {
+  if (getAIMode() === "openai") {
     try {
       content = await generateOpenAIManagerBriefing({
         deterministicBriefing,

@@ -2,7 +2,7 @@
 
 ## Architecture Goals
 
-- Build a local-first MVP that runs with SQLite and mock AI.
+- Build a local-first MVP that runs with SQLite and mock AI while deploying to PostgreSQL on Vercel.
 - Keep the core domain independent from external booking providers.
 - Keep AI behind a provider abstraction so mock and OpenAI modes share the same app flow.
 - Store venue rules in structured data and pass them into AI as context.
@@ -16,7 +16,7 @@ flowchart LR
   Staff["Staff user"] --> UI["Next.js App Router UI"]
   UI --> API["Server Actions and API Routes"]
   API --> Domain["Domain services"]
-  Domain --> DB["Prisma + SQLite"]
+  Domain --> DB["Prisma + SQLite local / PostgreSQL production"]
   Domain --> AI["AI Provider Interface"]
   AI --> Mock["Mock AI"]
   AI --> OpenAI["OpenAI Provider"]
@@ -113,6 +113,7 @@ tests/
 Use Next.js App Router pages and server components by default. Use client components only for interactive pieces such as uploads, charts, filters, editable drafts, and approval controls.
 
 UI conventions:
+
 - Use Tailwind CSS.
 - Use shadcn/ui where it provides value.
 - Keep domain-specific components in `components/app`, `components/imports`, `components/inquiries`, and `components/approvals`.
@@ -130,13 +131,23 @@ Domain logic should live in `lib`, not inside route handlers. Important services
 
 ### Data Layer
 
-Use Prisma for all database access. Start with SQLite:
+Use Prisma for all database access. Local development uses SQLite:
 
 ```env
-DATABASE_URL="file:./dev.db"
+DATABASE_URL="file:../dev.db"
 ```
 
-Design schema fields and relations so migration to Postgres/Supabase is straightforward:
+Production deployments use PostgreSQL through `prisma/schema.prisma`:
+
+```env
+DATABASE_URL="postgresql://..."
+DIRECT_URL="postgresql://..."
+```
+
+The local SQLite schema and migrations live under `prisma/sqlite/`. The production PostgreSQL schema and migration baseline live under `prisma/`.
+
+Design schema fields and relations so Postgres/Supabase remains straightforward:
+
 - Prefer explicit IDs.
 - Store timestamps consistently.
 - Avoid SQLite-only query assumptions.
@@ -204,6 +215,7 @@ export interface AIProvider {
 ```
 
 Provider behavior:
+
 - `mock-provider.ts` returns deterministic output for tests and local demos.
 - `openai-provider.ts` handles OpenAI API calls.
 - `index.ts` selects provider based on environment.
@@ -243,6 +255,7 @@ Forecasting should work without AI. AI can summarize and explain, but numeric ca
 Approval tasks are the safety boundary for the MVP.
 
 Rules:
+
 - AI-generated guest replies require approval.
 - Manager briefings are drafts until reviewed.
 - Staffing and promotion recommendations are suggestions until approved.
@@ -250,6 +263,7 @@ Rules:
 - Rejected or revised output should remain auditable.
 
 Recommended fields:
+
 - `taskType`
 - `status`
 - `sourceType`
@@ -264,6 +278,7 @@ Recommended fields:
 ## Route and API Responsibilities
 
 Pages:
+
 - `/dashboard`: read-only operational overview.
 - `/imports`: upload, mapping, validation, import history.
 - `/bookings`: booking list and filters.
@@ -275,6 +290,7 @@ Pages:
 - `/settings`: venue rules and packages.
 
 API routes or server actions:
+
 - `POST /api/imports`: upload and parse.
 - `POST /api/forecast`: create forecast snapshot.
 - `POST /api/ai/briefing`: generate briefing draft.
@@ -284,6 +300,7 @@ API routes or server actions:
 ## Testing Strategy
 
 Minimum test coverage:
+
 - Unit tests for analytics calculations.
 - Unit tests for import parsing and normalization.
 - Unit tests for forecast confidence labels.
@@ -315,6 +332,7 @@ lib/integrations/
 ```
 
 Integration principles:
+
 - Normalize external data into internal `Booking`, `Guest`, and `Inquiry` records.
 - Store external IDs and provider metadata.
 - Keep sending guest messages behind approval.
@@ -323,6 +341,7 @@ Integration principles:
 - Make provider failures visible without breaking core analytics.
 
 Future integration targets:
+
 - Booking systems for availability, bookings, cancellations, and source IDs.
 - Email for inbound inquiries and approved outbound replies.
 - SMS for approved reminders and follow-ups.

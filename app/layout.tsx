@@ -1,8 +1,11 @@
 import type { Metadata } from "next";
+import { getAppName } from "@/lib/env";
 import "./globals.css";
 
+const appName = getAppName();
+
 export const metadata: Metadata = {
-  title: "VenuePilot",
+  title: appName,
   description:
     "AI booking and operations assistant for hospitality and activity venues."
 };

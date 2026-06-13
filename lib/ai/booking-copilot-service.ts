@@ -6,13 +6,14 @@ import {
 } from "@/lib/ai/booking-copilot-types";
 import { createMockBookingCopilotProvider } from "@/lib/ai/mock-booking-copilot";
 import { createOpenAIBookingCopilotProvider } from "@/lib/ai/openai-booking-copilot";
+import { getAIMode } from "@/lib/env";
 
 export type BookingCopilotAnalysis = BookingCopilotOutput & {
   providerMode: BookingCopilotProvider["mode"];
 };
 
 export function getBookingCopilotMode(): BookingCopilotProvider["mode"] {
-  return process.env.OPENAI_API_KEY ? "openai" : "mock";
+  return getAIMode();
 }
 
 export function createBookingCopilotProvider(): BookingCopilotProvider {

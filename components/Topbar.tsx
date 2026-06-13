@@ -1,7 +1,8 @@
 import { Badge } from "@/components/Badge";
+import { getAIMode } from "@/lib/env";
 
 export function Topbar() {
-  const aiMode = process.env.OPENAI_API_KEY ? "AI provider connected" : "Local AI mode";
+  const aiMode = getAIMode() === "openai" ? "AI provider connected" : "Local AI mode";
 
   return (
     <header className="sticky top-0 z-20 flex min-h-16 items-center justify-between gap-4 border-b border-stone-200 bg-mist/90 px-4 py-3 backdrop-blur sm:px-6">

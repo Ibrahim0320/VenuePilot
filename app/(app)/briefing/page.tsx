@@ -23,6 +23,7 @@ import {
 import { parseSavedManagerBriefing } from "@/lib/briefing/briefing-persistence";
 import type { SavedManagerBriefing } from "@/lib/briefing/briefing-types";
 import { prisma } from "@/lib/db/prisma";
+import { getAIMode } from "@/lib/env";
 import { DEFAULT_VENUE_LOOKUP } from "@/lib/settings/venue-settings";
 import { cn } from "@/lib/utils";
 
@@ -50,7 +51,7 @@ export default async function BriefingPage({ searchParams }: BriefingPageProps) 
   const selectedBriefingId = firstParam(params.briefing);
   const error = firstParam(params.error);
   const mode = firstParam(params.mode);
-  const isOpenAIConfigured = Boolean(process.env.OPENAI_API_KEY?.trim());
+  const isOpenAIConfigured = getAIMode() === "openai";
   const { weekStartDate, weekEndDate } = getBriefingWeekWindow();
   const venue = await prisma.venue.findFirst({
     where: DEFAULT_VENUE_LOOKUP,

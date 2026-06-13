@@ -3,9 +3,9 @@ generator client {
 }
 
 datasource db {
-  provider  = "postgresql"
-  url       = env("DATABASE_URL")
-  directUrl = env("DIRECT_URL")
+  // Local development only. Production deployments use ../schema.prisma.
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
 }
 
 model Venue {
